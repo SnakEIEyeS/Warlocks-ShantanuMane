@@ -647,6 +647,7 @@ GameObject:
   - component: {fileID: 114433032633014358}
   - component: {fileID: 114536381306524116}
   - component: {fileID: 114958166876563926}
+  - component: {fileID: 114756080696425330}
   - component: {fileID: 114750167569732546}
   - component: {fileID: 114813465358522030}
   - component: {fileID: 114317486054182248}
@@ -4112,8 +4113,9 @@ MonoBehaviour:
   m_UnitHealthHandler: {fileID: 114300781154143650}
   m_UnitStatisticsController: {fileID: 114958166876563926}
   m_MoveSpeedBase: 30
-  m_TurnRateBase: 720
+  m_TurnRateBase: 270
   m_HealthRegenBase: 0
+  m_UnitInventory: {fileID: 114756080696425330}
   m_PortraitCamera: {fileID: 20245139031022896}
   m_AbilityList:
   - {fileID: 1954238920755630, guid: 5556c3475aa4af849bfafa2aa99ccdd7, type: 2}
@@ -4216,6 +4218,24 @@ MonoBehaviour:
   m_Unit: {fileID: 114433032633014358}
   m_UnitController: {fileID: 114536381306524116}
   m_StatusEventBus: {fileID: 0}
+--- !u!114 &114756080696425330
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1349119812687532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cf927bc1571f0d4181baf3cc0c8358c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_InventoryOwner: {fileID: 114433032633014358}
+  m_ItemList:
+  - {fileID: 114951854130637382, guid: 3f7c5e43dd57d20498e792fd7e1ab47f, type: 2}
+  - {fileID: 114428104456997472, guid: 3060475b27ab9fd4cae79fcb81a1d11a, type: 2}
+  - {fileID: 114833505170058548, guid: 37750e74327c3954c95fc27df3a2c354, type: 2}
+  - {fileID: 114833505170058548, guid: 37750e74327c3954c95fc27df3a2c354, type: 2}
+  m_InventoryCapacity: 4
 --- !u!114 &114813465358522030
 MonoBehaviour:
   m_ObjectHideFlags: 1

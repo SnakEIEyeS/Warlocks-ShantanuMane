@@ -42,6 +42,20 @@ public class UnitStatisticsController : MonoBehaviour, IUnitStatisticsController
 
         return FinalPercentMoveSpeedMod;
     }
+
+    public bool AddRawMoveSpeedModifier(float i_RawMoveSpeedModifier)
+    {
+        m_RawMoveSpeedModifiers.Add(i_RawMoveSpeedModifier);
+        return true;
+    }
+
+    //Takes in percentage as a ratio from 0 to 1, clamps to 0 or 1 if outside the range
+    public bool AddPercentMoveSpeedModifier(float i_PercentMoveSpeedModifier)
+    {
+        float ClampedPercentMoveSpeedMod = Mathf.Clamp01(i_PercentMoveSpeedModifier);
+        m_PercentMoveSpeedModifiers.Add(ClampedPercentMoveSpeedMod);
+        return true;
+    }
     #endregion
 
 
@@ -78,6 +92,20 @@ public class UnitStatisticsController : MonoBehaviour, IUnitStatisticsController
         }
 
         return FinalPercentTurnRateMod;
+    }
+
+    public bool AddRawTurnRateModifier(float i_RawTurnRateModifier)
+    {
+        m_RawTurnRateModifiers.Add(i_RawTurnRateModifier);
+        return true;
+    }
+
+    //Takes in percentage as a ratio from 0 to 1, clamps to 0 or 1 if outside the range
+    public bool AddPercentTurnRateModifier(float i_PercentTurnRateModifier)
+    {
+        float ClampedPercentTurnRateMod = Mathf.Clamp01(i_PercentTurnRateModifier);
+        m_PercentTurnRateModifiers.Add(ClampedPercentTurnRateMod);
+        return true;
     }
     #endregion
 
@@ -116,6 +144,20 @@ public class UnitStatisticsController : MonoBehaviour, IUnitStatisticsController
         }
 
         return FinalPercentHealthRegenMod;
+    }
+
+    public bool AddRawHealthRegenModifier(float i_RawHealthRegenModifier)
+    {
+        m_RawHealthRegenModifiers.Add(i_RawHealthRegenModifier);
+        return true;
+    }
+
+    //Takes in percentage as a ratio from 0 to 1, clamps to 0 or 1 if outside the range
+    public bool AddPercentHealthRegenModifier(float i_PercentHealthRegenModifier)
+    {
+        float ClampedPercentHealthRegenMod = Mathf.Clamp01(i_PercentHealthRegenModifier);
+        m_PercentHealthRegenModifiers.Add(ClampedPercentHealthRegenMod);
+        return true;
     }
     #endregion
 

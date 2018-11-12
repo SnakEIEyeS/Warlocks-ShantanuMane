@@ -11,16 +11,16 @@ public class UnitDamageHandler : MonoBehaviour, IDamageHandler
     public IDamageEventBus DamageEventBus { get { return m_DamageEventBus; } set { m_DamageEventBus = value as DamageEventBus; } }
 
     // Use this for initialization
-	void Start () {
+    void Start() {
         m_DamageEventBus = FindObjectOfType<DamageEventBus>();
 
         m_UnitOwner = this.transform.root.GetComponentInChildren<Unit>();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    }
+
+    // Update is called once per frame
+    void Update() {
+
+    }
 
     #region PhysicalDamage
     #endregion
@@ -34,6 +34,22 @@ public class UnitDamageHandler : MonoBehaviour, IDamageHandler
 
     private List<float> m_MagicResistanceReduction = new List<float>();
     public List<float> MagicResistanceReduction { get { return m_MagicResistanceReduction; } }
+
+    //Takes in percentage as a ratio from 0 to 1, clamps to 0 or 1 if outside the range
+    public bool AddMagicDamageResistance(float i_PercentMagicDamageResistance)
+    {
+        float ClampedPercentMagicDmgResistance = Mathf.Clamp01(i_PercentMagicDamageResistance);
+        m_MagicDamageResistance.Add(ClampedPercentMagicDmgResistance);
+        return true;
+    }
+
+    //Takes in percentage as a ratio from 0 to 1, clamps to 0 or 1 if outside the range
+    public bool AddMagicResistanceReduction(float i_PercentMagicResistanceReduction)
+    {
+        float ClampedPercentMagicResistanceReduction = Mathf.Clamp01(i_PercentMagicResistanceReduction);
+        m_MagicResistanceReduction.Add(ClampedPercentMagicResistanceReduction);
+        return true;
+    }
     #endregion
 
     #region LavaDamage
@@ -42,6 +58,22 @@ public class UnitDamageHandler : MonoBehaviour, IDamageHandler
 
     private List<float> m_LavaResistanceReduction = new List<float>();
     public List<float> LavaResistanceReduction { get { return m_LavaResistanceReduction; } }
+
+    //Takes in percentage as a ratio from 0 to 1, clamps to 0 or 1 if outside the range
+    public bool AddLavaDamageResistance(float i_PercentLavaDamageResistance)
+    {
+        float ClampedPercentLavaDamageResistance = Mathf.Clamp01(i_PercentLavaDamageResistance);
+        m_LavaDamageResistance.Add(ClampedPercentLavaDamageResistance);
+        return true;
+    }
+
+    //Takes in percentage as a ratio from 0 to 1, clamps to 0 or 1 if outside the range
+    public bool AddLavaResistanceReduction(float i_PercentLavaResistanceReduction)
+    {
+        float ClampedPercentLavaResistanceReduction = Mathf.Clamp01(i_PercentLavaResistanceReduction);
+        m_LavaResistanceReduction.Add(ClampedPercentLavaResistanceReduction);
+        return true;
+    }
     #endregion
 
     public void TakeDamage(float i_DamageAmount, DamageType i_DamageType, DamageDealer i_DamageDealer)
