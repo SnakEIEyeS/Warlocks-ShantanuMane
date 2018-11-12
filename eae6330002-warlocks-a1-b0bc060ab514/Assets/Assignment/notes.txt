@@ -1,15 +1,18 @@
 Assignment Notes
 
-Assignment: [3]
+Assignment: [5]
 Student: [Shantanu Mane]
 
 What are the controls for the locally controlled unit?
 [Right-click to move. Left-click to select a unit.
-Q to cast Push, W to cast Teleport, E to cast Fireball, D to cast Blast, F for Gravity Well, B for Meteor, T for Stealth.
+Q to cast Push, W to cast Teleport, E to cast Fireball, D to cast Blast, 
+F for Gravity Well, B for Meteor, T for Stealth, V for Spell Shield.
 S to stop any action.]
 
 What workflow enhancement did you implement in the editor?
 [Insert your answer here]
 
 Any other comments?
-[Stealth is broken when spell is cast or duration is done. Started working on a UnitStatusController and StatusEventBus]
+[I've created a robust Damage system and also a good system for Unit Statistics that ties into the Items.
+I've added to the UnitStatus system to handle Stun, Knockback & Spell Immunity.
+Although, these systems do still need some more work to be completed.]
