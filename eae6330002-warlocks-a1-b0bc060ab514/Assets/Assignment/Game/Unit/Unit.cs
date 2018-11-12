@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IDamageable, IDamageInflicter, IStatusAffectable {
+public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IInventoryHolder,
+    IDamageable, IDamageInflicter, IStatusAffectable {
 
     #region Unit
     [SerializeField]
@@ -40,7 +41,7 @@ public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IDamageable, IDamageI
     }
 
     [SerializeField]
-    private float m_TurnRateBase = 720f;//TODO figure out how set should work
+    private float m_TurnRateBase = 270f;//TODO figure out how set should work
     public float TurnRate
     {
         get
@@ -62,6 +63,12 @@ public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IDamageable, IDamageI
         }
         set { m_HealthRegenBase = value; }
     }
+    #endregion
+
+    #region IInventoryHolder
+    [SerializeField]
+    private UnitInventory m_UnitInventory = null;
+    public IInventory Inventory { get { return m_UnitInventory; } }
     #endregion
 
     [SerializeField]
