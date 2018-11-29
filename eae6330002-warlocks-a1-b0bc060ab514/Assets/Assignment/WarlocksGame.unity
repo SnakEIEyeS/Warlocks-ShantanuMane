@@ -159,6 +159,12 @@ MonoBehaviour:
   m_MapLayerMask:
     serializedVersion: 2
     m_Bits: 1024
+--- !u!114 &25679425 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114536381306524116, guid: fe84ace01ffc230479d08b60c164785b,
+    type: 2}
+  m_PrefabInternal: {fileID: 1543521508}
+  m_Script: {fileID: 11500000, guid: 6ce578288c466490e8dd32fc557cb55f, type: 3}
 --- !u!1 &48370954
 GameObject:
   m_ObjectHideFlags: 0
@@ -2089,11 +2095,20 @@ Prefab:
       propertyPath: m_RootOrder
       value: 6
       objectReference: {fileID: 0}
-    - target: {fileID: 114536381306524116, guid: fe84ace01ffc230479d08b60c164785b,
+    - target: {fileID: 1349119812687532, guid: fe84ace01ffc230479d08b60c164785b, type: 2}
+      propertyPath: m_Name
+      value: Hero1(2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 114433032633014358, guid: fe84ace01ffc230479d08b60c164785b,
         type: 2}
-      propertyPath: m_Map
+      propertyPath: m_SpawnPoint
       value: 
-      objectReference: {fileID: 2001941}
+      objectReference: {fileID: 856482552}
+    - target: {fileID: 114750167569732546, guid: fe84ace01ffc230479d08b60c164785b,
+        type: 2}
+      propertyPath: m_StatusEventBus
+      value: 
+      objectReference: {fileID: 89831250}
     - target: {fileID: 114536381306524116, guid: fe84ace01ffc230479d08b60c164785b,
         type: 2}
       propertyPath: m_AbilityFactory
@@ -2104,30 +2119,16 @@ Prefab:
       propertyPath: m_AbilityEventBus
       value: 
       objectReference: {fileID: 280841114}
-    - target: {fileID: 114750167569732546, guid: fe84ace01ffc230479d08b60c164785b,
-        type: 2}
-      propertyPath: m_StatusEventBus
-      value: 
-      objectReference: {fileID: 89831250}
-    - target: {fileID: 1349119812687532, guid: fe84ace01ffc230479d08b60c164785b, type: 2}
-      propertyPath: m_Name
-      value: Hero1(2)
-      objectReference: {fileID: 0}
     - target: {fileID: 114433032633014358, guid: fe84ace01ffc230479d08b60c164785b,
         type: 2}
       propertyPath: m_Owner
       value: 
       objectReference: {fileID: 1800101788}
-    - target: {fileID: 114433032633014358, guid: fe84ace01ffc230479d08b60c164785b,
+    - target: {fileID: 114536381306524116, guid: fe84ace01ffc230479d08b60c164785b,
         type: 2}
-      propertyPath: m_SpawnPoint
+      propertyPath: m_Map
       value: 
-      objectReference: {fileID: 856482552}
-    - target: {fileID: 20245139031022896, guid: fe84ace01ffc230479d08b60c164785b,
-        type: 2}
-      propertyPath: m_TargetTexture
-      value: 
-      objectReference: {fileID: 8400000, guid: d0f11c18f0183774781a1de5f1c0e506, type: 2}
+      objectReference: {fileID: 2001941}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: fe84ace01ffc230479d08b60c164785b, type: 2}
   m_IsPrefabParent: 0
@@ -2479,12 +2480,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1800101786}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 657b7a92bd8d349ae8ddaa527e232cc6, type: 3}
+  m_Script: {fileID: 11500000, guid: 1a34dfdaa477dc1498a795c6ab570699, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Player: {fileID: 1800101788}
   m_OwnedUnits:
   - {fileID: 1324187450}
+  m_Game: {fileID: 446598432}
+  m_Round: {fileID: 823693073}
+  m_Map: {fileID: 2001941}
+  m_Island: {fileID: 2110247655}
+  m_SelectedUnitController: {fileID: 25679425}
+  m_AbilityEventBus: {fileID: 280841114}
 --- !u!114 &1800101788
 MonoBehaviour:
   m_ObjectHideFlags: 0

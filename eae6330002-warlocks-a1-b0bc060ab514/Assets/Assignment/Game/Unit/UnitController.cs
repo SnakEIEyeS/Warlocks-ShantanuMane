@@ -9,6 +9,7 @@ public class UnitController : MonoBehaviour, IUnitController {
     private Unit m_ControlledUnit = null;
     private IStatusAffectable m_UnitStatusAffectable = null;
     private GameObject m_AbilityRef = null;
+    private AbilityHolder m_AbilityHolderRef = null;
 
     [SerializeField]
     private Map m_Map = null;
@@ -147,7 +148,7 @@ public class UnitController : MonoBehaviour, IUnitController {
     {
         if(!m_UnitStatusAffectable.AbilityCastBlocked)
         {
-            List<GameObject> GOAbilityList = m_ControlledUnit.getAbilityList();
+            /*List<GameObject> GOAbilityList = m_ControlledUnit.getAbilityList();
             if (GOAbilityList[i_AbilityIndex])
             {
                 IObjectPool<GameObject> AbilityPool = m_AbilityFactory.Get(GOAbilityList[i_AbilityIndex]);
@@ -158,6 +159,23 @@ public class UnitController : MonoBehaviour, IUnitController {
                     //TODO AbilityRef.Instigator = need to get IPlayerController
                     m_AbilityRef = AbilityGO;
 
+                    AbilityRef.Caster = this;
+
+                    return m_AbilityRef;
+                }
+            }*/
+
+            List<AbilityHolder> AbilityHolderList = m_ControlledUnit.getAbilityHolderList();
+            if (AbilityHolderList[i_AbilityIndex]!=null && !AbilityHolderList[i_AbilityIndex].OnCooldown)
+            {
+                IObjectPool<GameObject> AbilityPool = m_AbilityFactory.Get(AbilityHolderList[i_AbilityIndex].Ability);
+                GameObject AbilityGO = AbilityPool.Get();
+                IAbility AbilityRef = AbilityGO.GetComponentInChildren<IAbility>();
+                if (AbilityRef != null)
+                {
+                    //TODO AbilityRef.Instigator = need to get IPlayerController
+                    m_AbilityRef = AbilityGO;
+                    m_AbilityHolderRef = AbilityHolderList[i_AbilityIndex];
                     AbilityRef.Caster = this;
 
                     return m_AbilityRef;
@@ -186,9 +204,14 @@ public class UnitController : MonoBehaviour, IUnitController {
         if(m_AbilityRef)
         {
             m_AbilityRef.GetComponentInChildren<ICastableAbility>().AbilityExecute();
+            //if (m_AbilityHolderRef.Ability.GetComponentInChildren<ICastableAbility>() != null)
+            {
+               // m_AbilityHolderRef.StartCooldown();
+            }
             m_AbilityEventBus.OnCastComplete.Invoke(this);
             m_WarlockAnimScript.SetCasting(false);
             m_AbilityRef = null;
+            m_AbilityHolderRef = null;
         }
     }
     private void CancelAbilityTargeting(UnitController i_UnitController)
@@ -207,6 +230,10 @@ public class UnitController : MonoBehaviour, IUnitController {
         {
             m_AbilityRef.GetComponentInChildren<ICastableAbility>().AbilityEnd();
             m_AbilityRef = null;
+        }
+        if (m_AbilityHolderRef != null)
+        {
+            m_AbilityHolderRef = null;
         }
     }
 

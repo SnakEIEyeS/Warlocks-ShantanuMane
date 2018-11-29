@@ -4126,6 +4126,23 @@ MonoBehaviour:
   - {fileID: 1881855679225124, guid: 33dc80da37975a94b8abf4bb80d21b8f, type: 2}
   - {fileID: 1307507489634550, guid: 8357c7b62182378428c2d7865da2aa29, type: 2}
   - {fileID: 1285525801044542, guid: c42418020afe28643abd56bc254bfa7b, type: 2}
+  m_AbilityHolderList:
+  - m_Ability: {fileID: 1954238920755630, guid: 5556c3475aa4af849bfafa2aa99ccdd7,
+      type: 2}
+  - m_Ability: {fileID: 1373369756280718, guid: a5d54f807d469bb449490be98b7c685e,
+      type: 2}
+  - m_Ability: {fileID: 1206539700716026, guid: 7f098d3f6a137ee4b9afb2c7abc1e139,
+      type: 2}
+  - m_Ability: {fileID: 1647143707376690, guid: 36a0f836807abbe4a9f7fccb5dbaf657,
+      type: 2}
+  - m_Ability: {fileID: 1837826987687848, guid: 29db47b4c7ec26e428d0e56057ada1b8,
+      type: 2}
+  - m_Ability: {fileID: 1881855679225124, guid: 33dc80da37975a94b8abf4bb80d21b8f,
+      type: 2}
+  - m_Ability: {fileID: 1307507489634550, guid: 8357c7b62182378428c2d7865da2aa29,
+      type: 2}
+  - m_Ability: {fileID: 1285525801044542, guid: c42418020afe28643abd56bc254bfa7b,
+      type: 2}
   m_MeshRenderer: {fileID: 137876861387746908}
   m_MinimapMarkerCubeMesh: {fileID: 23594994294858154}
   m_MinimapMarkerSphereMesh: {fileID: 23567610805106080}

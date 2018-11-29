@@ -78,6 +78,8 @@ public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IInventoryHolder,
     //private List<UnityEngine.Object> m_AbilityList = new List<UnityEngine.Object>();
     [SerializeField]
     private List<GameObject> m_AbilityList = new List<GameObject>();
+    [SerializeField]
+    private List<AbilityHolder> m_AbilityHolderList = new List<AbilityHolder>();
 
     [SerializeField]
     private SkinnedMeshRenderer m_MeshRenderer = null;
@@ -189,6 +191,8 @@ public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IInventoryHolder,
     //{ return m_AbilityList; }
     public List<GameObject> getAbilityList()
     { return m_AbilityList; }
+    public List<AbilityHolder> getAbilityHolderList()
+    { return m_AbilityHolderList; }
 
     //Spawn self at appropriate location after death
     public void SpawnSelf()
