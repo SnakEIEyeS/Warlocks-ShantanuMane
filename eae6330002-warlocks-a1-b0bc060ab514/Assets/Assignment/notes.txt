@@ -1,6 +1,6 @@
 Assignment Notes
 
-Assignment: [5]
+Assignment: [6]
 Student: [Shantanu Mane]
 
 What are the controls for the locally controlled unit?
@@ -13,6 +13,7 @@ What workflow enhancement did you implement in the editor?
 [Insert your answer here]
 
 Any other comments?
-[I've created a robust Damage system and also a good system for Unit Statistics that ties into the Items.
-I've added to the UnitStatus system to handle Stun, Knockback & Spell Immunity.
-Although, these systems do still need some more work to be completed.]
+[I've made the base framework for AI. I've also made the framework for an Aggressive AI 
+that makes use of the Utility Theory. It has bugs though, and the assignment is incomplete.
+Although, the base framework can be tested using the TestMove and TestCast functions in the AggressiveAI,
+which have been commented in the Start function.]
