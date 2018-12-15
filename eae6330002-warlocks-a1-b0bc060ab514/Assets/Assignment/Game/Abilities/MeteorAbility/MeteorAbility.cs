@@ -2,9 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
 public class MeteorAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantiableAbility, 
     IStatusEffectAbility, IMovingAbility, IDamagingAbility
 {
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
+    [SerializeField]
+    private PhotonView m_MeshPhotonView = null;
 
     private PlayerController m_InstigatorController = null;
     private UnitController m_Caster = null;
@@ -61,7 +66,8 @@ public class MeteorAbility : MonoBehaviour, IAbility, ICastableAbility, IInstant
     }
     public void AbilityExecute()
     {
-        SummonMeteor();
+        m_PhotonView.RPC("SummonMeteor", PhotonNetwork.MasterClient);
+        //SummonMeteor();
     }
     public void AbilityEnd()
     {
@@ -72,7 +78,8 @@ public class MeteorAbility : MonoBehaviour, IAbility, ICastableAbility, IInstant
         m_Caster = null;
         m_InstigatorController = null;
 
-        m_AbilityPool.Return(this.gameObject);
+        //m_AbilityPool.Return(this.gameObject);
+        PhotonNetwork.Destroy(this.gameObject);
     }
     #endregion
 
@@ -92,6 +99,13 @@ public class MeteorAbility : MonoBehaviour, IAbility, ICastableAbility, IInstant
     public IDamageEventBus DamageEventBus { get { return m_DamageEventBus; } set { m_DamageEventBus = value as DamageEventBus; } }
     #endregion
 
+    void Awake()
+    {
+        GameObject CasterGO = PhotonView.Find((int)m_PhotonView.InstantiationData[0]).gameObject;
+        m_Caster = CasterGO.GetComponentInChildren<UnitController>();
+        
+    }
+
     // Use this for initialization
     void Start()
     {
@@ -102,12 +116,14 @@ public class MeteorAbility : MonoBehaviour, IAbility, ICastableAbility, IInstant
         m_DamageEventBus = FindObjectOfType<DamageEventBus>();
 
         m_FallSpeed = m_FallHtAndDist / m_FallTime;
+
+        m_MeshPhotonView.TransferOwnership(PhotonNetwork.MasterClient);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (m_bMeteorMoving)
+        if (m_bMeteorMoving && m_PhotonView.IsMine)
         {
             MoveMeteor();
         }
@@ -132,14 +148,23 @@ public class MeteorAbility : MonoBehaviour, IAbility, ICastableAbility, IInstant
     {
         if (m_Caster == i_UnitController)
         {
-            this.transform.root.forward = i_Direction;
-            m_StartPosition = m_Caster.getControlledUnit().transform.position + new Vector3(0.0f, m_FallHtAndDist, 0.0f);
+            //this.transform.root.forward = i_Direction;
+            //m_StartPosition = m_Caster.getControlledUnit().transform.position + new Vector3(0.0f, m_FallHtAndDist, 0.0f);
 
             AbilityEventBus abilityEventBus = (AbilityEventBus)FindObjectOfType<AbilityEventBus>();
             abilityEventBus.OnDirectionTargeted.RemoveListener(SetMeteorSummonVars);
+            m_PhotonView.RPC("RPC_SetMeteorSummonVars", RpcTarget.MasterClient, i_Direction);
         }
     }
 
+    [PunRPC]
+    private void RPC_SetMeteorSummonVars(Vector3 i_Direction)
+    {
+        this.transform.root.forward = i_Direction;
+        m_StartPosition = m_Caster.getControlledUnit().transform.position + new Vector3(0.0f, m_FallHtAndDist, 0.0f);
+    }
+
+    [PunRPC]
     private void SummonMeteor()
     {
         this.transform.root.position = m_StartPosition;

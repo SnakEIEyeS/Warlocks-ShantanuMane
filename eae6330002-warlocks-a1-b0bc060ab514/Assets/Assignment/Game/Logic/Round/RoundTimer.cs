@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RoundTimer : MonoBehaviour {
+using Photon.Pun;
+
+public class RoundTimer : MonoBehaviour, IPunObservable {
 
     private float RoundStartTime;
+    //Sync over Network
     private float RoundElapsedTime = 0f;
 
     [SerializeField]
@@ -13,6 +16,22 @@ public class RoundTimer : MonoBehaviour {
     [SerializeField]
     private Island m_Island = null;
 
+
+    #region IPunObservable
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if(stream.IsWriting)
+        {
+            stream.SendNext(RoundElapsedTime);
+        }
+        else
+        {
+            RoundElapsedTime = (float)stream.ReceiveNext();
+        }
+    }
+
+    #endregion
 
     // Use this for initialization
     void Start ()

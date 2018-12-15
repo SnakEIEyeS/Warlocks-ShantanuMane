@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UnitHealthHandler : MonoBehaviour, IUnitHealthHandler
+using Photon.Pun;
+
+public class UnitHealthHandler : MonoBehaviour, IPunObservable, IUnitHealthHandler
 {
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
+
     [SerializeField]
     private GameObject m_Owner = null;
     [SerializeField]
@@ -39,7 +44,48 @@ public class UnitHealthHandler : MonoBehaviour, IUnitHealthHandler
     {
         if(i_Damageable.Equals(m_Owner) || (i_Damageable as MonoBehaviour).gameObject == m_Owner)
         {
-            m_Health.Current -= i_DamageAmount;
+            //m_Health.Current -= i_DamageAmount;
+            if (m_PhotonView.IsMine)
+            {
+                TakeDamage(i_DamageAmount);
+            }
+            else
+            {
+                m_PhotonView.RPC("TakeDamage", m_PhotonView.Owner, i_DamageAmount);
+            }
+        }
+    }
+
+    [PunRPC]
+    private void TakeDamage(float i_DamageAmount)
+    {
+        m_Health.Current -= i_DamageAmount;
+        if(m_Health.Current < 0.0f)
+        {
+            m_Health.Current = 0.0f;
+        }
+    }
+
+    public void RefillHealthOnSpawn()
+    {
+        //m_Health.Current = m_Health.Max;
+        if(m_PhotonView.IsMine)
+        {
+            Heal(m_Health.Max);
+        }
+        else
+        {
+            m_PhotonView.RPC("Heal", m_PhotonView.Owner, m_Health.Max);
+        }
+    }
+
+    [PunRPC]
+    private void Heal(float i_HealAmount)
+    {
+        m_Health.Current += i_HealAmount;
+        if(m_Health.Current > m_Health.Max)
+        {
+            m_Health.Current = m_Health.Max;
         }
     }
 
@@ -61,4 +107,21 @@ public class UnitHealthHandler : MonoBehaviour, IUnitHealthHandler
 
     private void HandleLavaDamageAttempt(DamageInstance i_DamageInstance)
     { }*/
+
+
+    #region IPunObservable
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if(stream.IsWriting)
+        {
+            stream.SendNext(m_Health.Current);
+        }
+        else
+        {
+            m_Health.Current = (float)stream.ReceiveNext();
+        }
+    }
+
+    #endregion
 }

@@ -2,11 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class LocalPlayerController : PlayerController, IInputController {
 
     //[SerializeField]
     //private Transform m_TargetMarker = null;
-    
+
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
+    public PhotonView PlayerPhotonView { get { return m_PhotonView; } }
 
     [SerializeField]
     private UnitDetailsHUD m_UnitDetailsHUD = null;
@@ -43,7 +48,12 @@ public class LocalPlayerController : PlayerController, IInputController {
     {
         
     }
-#endregion
+    #endregion
+
+    private void Awake()
+    {
+         
+    }
 
     private void Start()
     {
@@ -52,40 +62,76 @@ public class LocalPlayerController : PlayerController, IInputController {
         m_DefaultController.SelectHero();
         m_InputControllers.Pop();
         m_InputControllers.Push(m_DirectionTargetController);*/
-        PlayerState = PlayerStates.Default;
-        m_AbilityEventBus.OnDirectionTargeted.AddListener(AbilityGroundTargeted);
-        m_AbilityEventBus.OnPointTargeted.AddListener(AbilityGroundTargeted);
-        m_AbilityEventBus.OnTargetingCanceled.AddListener(AbilityTargetingCanceled);
-        m_AbilityEventBus.OnCastComplete.AddListener(AbilityCastComplete);
+
+        
+        
+    }
+
+    public void Init()
+    {
+        PhotonView UnitPhotonView = PhotonView.Find((int)m_PhotonView.InstantiationData[2]);
+        Unit AssignedUnit = UnitPhotonView.gameObject.GetComponentInChildren<Unit>();
+        GetOwnedUnits().Add(AssignedUnit);
+        AssignedUnit.Owner = Player as Player;
+
+        SelectedUnit = AssignedUnit.Controller as UnitController;
+
+        map = GameDataManager.Instance.GameMap;
+        m_AbilityEventBus = GameDataManager.Instance.AbilityEventBus as AbilityEventBus;
+
+        //Check if view is mine?
+        //TODO should this instance of LocPlayerCtrlr be instantiated on all clients? 
+        //Answer: this is flawed because the PlayerPrefab has this component
+        if (m_PhotonView.IsMine)
+        {
+            m_UnitDetailsHUD = GameDataManager.Instance.HeadUpDisplay;
+            m_UnitDetailsHUD.LocalPlayerController = this;
+        }
+        //Initialize sub-controllers
+        m_DefaultController.Init(m_UnitDetailsHUD, SelectedUnit, map);
+        m_DirectionTargetController.Init(SelectedUnit, map, m_AbilityEventBus);
+        m_PointTargetController.Init(SelectedUnit, map, m_AbilityEventBus);
+
+        if (m_PhotonView.IsMine)
+        {
+            PlayerState = PlayerStates.Default;
+            m_AbilityEventBus.OnDirectionTargeted.AddListener(AbilityGroundTargeted);
+            m_AbilityEventBus.OnPointTargeted.AddListener(AbilityGroundTargeted);
+            m_AbilityEventBus.OnTargetingCanceled.AddListener(AbilityTargetingCanceled);
+            m_AbilityEventBus.OnCastComplete.AddListener(AbilityCastComplete);
+        }
     }
 
     private void Update()
     {
-
-        //m_InputControllers.Peek().UpdateInput();
-        /*if(PlayerState != PlayerStates.Casting)
+        if(m_PhotonView.IsMine)
         {
-            UpdateRegularInput();
-        }*/
-
-        switch (PlayerState)
-        {
-            case PlayerStates.Default:
+            //m_InputControllers.Peek().UpdateInput();
+            /*if(PlayerState != PlayerStates.Casting)
+            {
                 UpdateRegularInput();
-                m_DefaultController.UpdateInput();
-                break;
+            }*/
 
-            case PlayerStates.Targeting:
-                m_CurrentTargetingController.UpdateInput();
-                break;
+            switch (PlayerState)
+            {
+                case PlayerStates.Default:
+                    UpdateRegularInput();
+                    m_DefaultController.UpdateInput();
+                    break;
 
-            case PlayerStates.Casting:
-                m_CastController.UpdateInput();
-                break;
+                case PlayerStates.Targeting:
+                    m_CurrentTargetingController.UpdateInput();
+                    break;
 
-            default:
-                break;
+                case PlayerStates.Casting:
+                    m_CastController.UpdateInput();
+                    break;
+
+                default:
+                    break;
+            }
         }
+        
     }
 
     private void UpdateRegularInput()

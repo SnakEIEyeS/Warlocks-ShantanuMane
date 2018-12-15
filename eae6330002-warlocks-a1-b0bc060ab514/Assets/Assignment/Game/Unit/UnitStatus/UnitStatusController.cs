@@ -2,7 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class UnitStatusController : MonoBehaviour, IUnitStatusController {
+
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
 
     [SerializeField]
     private Unit m_Unit = null;
@@ -18,9 +23,25 @@ public class UnitStatusController : MonoBehaviour, IUnitStatusController {
     public IStatusEventBus StatusEventBus { get { return m_StatusEventBus; } set { m_StatusEventBus = value as StatusEventBus; } }
     #endregion
 
+    private void Awake()
+    {
+        
+    }
     // Use this for initialization
     void Start () {
-        if(m_Unit.GetComponentInChildren<IStatusAffectable>()!=null)
+        
+	}
+
+    public void Init()
+    {
+        /*PhotonView AttachedPhotonView = GetComponentInChildren<PhotonView>();
+        if (AttachedPhotonView)
+        {
+            m_StatusEventBus = (StatusEventBus)AttachedPhotonView.InstantiationData[4];
+        }*/
+        m_StatusEventBus = GameDataManager.Instance.StatusEventBus as StatusEventBus;
+
+        if (m_Unit.GetComponentInChildren<IStatusAffectable>() != null)
         {
             m_UnitStatusAffectable = m_Unit.GetComponentInChildren<IStatusAffectable>();
         }
@@ -28,7 +49,7 @@ public class UnitStatusController : MonoBehaviour, IUnitStatusController {
         m_StatusEventBus.SpellImmunityEvent.AddListener(ControlSpellImmunity);
         m_StatusEventBus.StunAttemptEvent.AddListener(StunAttempt);
         m_StatusEventBus.KnockbackAttemptEvent.AddListener(KnockbackAttempt);
-	}
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -42,22 +63,37 @@ public class UnitStatusController : MonoBehaviour, IUnitStatusController {
         {
             if(i_bInvis)
             {
-                TurnInvisible();
+                //TurnInvisible();
+                m_PhotonView.RPC("TurnInvisible", RpcTarget.All);
             }
             else
             {
-                EndInvisible();
+                //EndInvisible();
+                m_PhotonView.RPC("EndInvisible", RpcTarget.All);
             }
         }
     }
 
+    [PunRPC]
     private void TurnInvisible()
     {
         m_UnitStatusAffectable.SkinnedMeshRenderer.material = m_UnitStatusAffectable.InvisibilityMaterial;
+        if (!m_PhotonView.IsMine)
+        {
+            m_Unit.gameObject.GetComponentInChildren<Renderer>().enabled = false;
+            m_Unit.gameObject.GetComponentInChildren<UnitOverheadUI>().OverheadUICanvas.enabled = false;
+        }
     }
+
+    [PunRPC]
     private void EndInvisible()
     {
         m_UnitStatusAffectable.SkinnedMeshRenderer.material = m_UnitStatusAffectable.NormalMaterial;
+        //if (m_PhotonView.IsMine)
+        {
+            m_Unit.gameObject.GetComponentInChildren<Renderer>().enabled = true;
+            m_Unit.gameObject.GetComponentInChildren<UnitOverheadUI>().OverheadUICanvas.enabled = true;
+        }
     }
     #endregion
 
@@ -68,20 +104,25 @@ public class UnitStatusController : MonoBehaviour, IUnitStatusController {
         {
             if(i_bSpellImmune)
             {
-                ApplySpellImmunity();
+                //ApplySpellImmunity();
+                m_PhotonView.RPC("ApplySpellImmunity", RpcTarget.All);
             }
             else
             {
-                EndSpellImmunity();
+                //EndSpellImmunity();
+                m_PhotonView.RPC("EndSpellImmunity", RpcTarget.All);
             }
         }
     }
 
+    [PunRPC]
     private void ApplySpellImmunity()
     {
         m_UnitStatusAffectable.SpellImmune = true;
         print(m_Unit.gameObject.name + " : Spell Immunity applied");
     }
+
+    [PunRPC]
     private void EndSpellImmunity()
     {
         m_UnitStatusAffectable.SpellImmune = false;
@@ -95,17 +136,27 @@ public class UnitStatusController : MonoBehaviour, IUnitStatusController {
     {
         if(i_Unit == m_Unit && !m_UnitStatusAffectable.SpellImmune)
         {
-            ApplyStun();
+            //ApplyStun();
+            m_PhotonView.RPC("ApplyStun", m_Unit.UnitPhotonView.Owner);
             Invoke("EndStun", i_StunTime);
         }
     }
+
+    [PunRPC]
     private void ApplyStun()
     {
         print("Aplying Stun to " + m_Unit);
         m_UnitStatusAffectable.MovementBlocked = true;
         m_UnitStatusAffectable.AbilityCastBlocked = true;
     }
+
     private void EndStun()
+    {
+        m_PhotonView.RPC("RPC_EndStun", m_Unit.UnitPhotonView.Owner);
+    }
+    
+    [PunRPC]
+    private void RPC_EndStun()
     {
         print("Ending Stun on " + m_Unit);
         m_UnitStatusAffectable.MovementBlocked = false;
@@ -118,12 +169,14 @@ public class UnitStatusController : MonoBehaviour, IUnitStatusController {
     {
         if(i_Unit == m_Unit && !m_UnitStatusAffectable.SpellImmune)
         {
-            ApplyKnockback(i_Force, i_ForceMode, i_KnockbackTime);
+            m_PhotonView.RPC("ApplyKnockback", m_Unit.UnitPhotonView.Owner, i_Force, (byte)i_ForceMode, i_KnockbackTime);
+            //ApplyKnockback(i_Force, i_ForceMode, i_KnockbackTime);
             Invoke("EndKnockback", i_KnockbackTime);
         }
     }
 
-    private void ApplyKnockback(Vector3 i_Force, ForceMode i_ForceMode, float i_KnockbackTime)
+    [PunRPC]
+    private void ApplyKnockback(Vector3 i_Force, byte i_ForceMode, float i_KnockbackTime)
     {
         ApplyStun();
         
@@ -137,6 +190,12 @@ public class UnitStatusController : MonoBehaviour, IUnitStatusController {
         //Invoke("EndKnockback", i_KnockbackTime);
     }
     private void EndKnockback()
+    {
+        m_PhotonView.RPC("RPC_EndKnockBack", m_Unit.UnitPhotonView.Owner);
+    }
+
+    [PunRPC]
+    private void RPC_EndKnockBack()
     {
         EndStun();
 

@@ -25,7 +25,7 @@ public class Store : MonoBehaviour, IStore {
 		
 	}
 
-    public void OpenShop(Round i_Round)
+    public void OpenShop(int i_RoundPhotonViewID)
     {
         m_StoreCanvas.enabled = true;
         print("OpenShop called");

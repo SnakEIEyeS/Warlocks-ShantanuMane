@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class GravityWellAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantiableAbility, IStatusEffectAbility
 {
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
 
     private PlayerController m_InstigatorController = null;
     private UnitController m_Caster = null;
@@ -56,7 +60,8 @@ public class GravityWellAbility : MonoBehaviour, IAbility, ICastableAbility, IIn
         m_Caster = null;
         m_InstigatorController = null;
 
-        m_AbilityPool.Return(this.gameObject);
+        //m_AbilityPool.Return(this.gameObject);
+        PhotonNetwork.Destroy(this.gameObject);
     }
     #endregion
 
@@ -67,6 +72,12 @@ public class GravityWellAbility : MonoBehaviour, IAbility, ICastableAbility, IIn
     #region IStatusEffectAbility
     public IStatusEventBus StatusEventBus { get { return m_StatusEventBus; } set { m_StatusEventBus = value as StatusEventBus; } }
     #endregion
+
+    void Awake()
+    {
+        GameObject CasterGO = PhotonView.Find((int)m_PhotonView.InstantiationData[0]).gameObject;
+        m_Caster = CasterGO.GetComponentInChildren<UnitController>();
+    }
 
     // Use this for initialization
     void Start()
@@ -80,7 +91,7 @@ public class GravityWellAbility : MonoBehaviour, IAbility, ICastableAbility, IIn
     // Update is called once per frame
     void Update()
     {
-        if(m_bWellCreated)
+        if(m_bWellCreated && m_PhotonView.IsMine)
         {
             PullCaughtUnits();
         }
@@ -118,11 +129,24 @@ public class GravityWellAbility : MonoBehaviour, IAbility, ICastableAbility, IIn
     {
         if (m_Caster == i_UnitController)
         {
-            m_WellLocation = i_TargetPoint;
+            //m_WellLocation = i_TargetPoint;
+            m_PhotonView.RPC("RPC_SetWellLocation", PhotonNetwork.MasterClient, i_TargetPoint);
         }
     }
 
-    void CreateGravityWell()
+    [PunRPC]
+    private void RPC_SetWellLocation(Vector3 i_TargetPoint)
+    {
+        m_WellLocation = i_TargetPoint;
+    }
+
+    private void CreateGravityWell()
+    {
+        m_PhotonView.RPC("RPC_CreateGravityWell", PhotonNetwork.MasterClient);
+    }
+
+    [PunRPC]
+    void RPC_CreateGravityWell()
     {
         DrawDebugLines();
         Collider[] CaughtColliders = Physics.OverlapSphere(m_WellLocation, m_OuterRadius);
@@ -133,6 +157,7 @@ public class GravityWellAbility : MonoBehaviour, IAbility, ICastableAbility, IIn
             {
                 m_CaughtUnitControllers.Add(caughtCollUnitCtrlr);
 
+                m_StatusEventBus = GameDataManager.Instance.StatusEventBus as StatusEventBus;
                 m_StatusEventBus.StunAttemptEvent.Invoke(caughtCollUnitCtrlr.getControlledUnit(), m_Duration);
             }
         }

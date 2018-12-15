@@ -8,6 +8,10 @@ public class App : MonoBehaviour {
     private Scenes scenes = null;
     public Scenes Scenes { get { return scenes; } }
 
+    [SerializeField]
+    private PUNPersistent m_PUNPersistent = null;
+    public PUNPersistent PUNPersistentObj { get { return m_PUNPersistent; } }
+
     private void Start() {
         DontDestroyOnLoad(gameObject);
     }

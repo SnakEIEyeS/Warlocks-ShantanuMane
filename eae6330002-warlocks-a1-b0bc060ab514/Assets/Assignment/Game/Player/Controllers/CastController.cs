@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class CastController : MonoBehaviour, IInputController {
 
+    [SerializeField]
     private PlayerController m_ParentPlayerController = null;
 
     #region IInputController
@@ -15,6 +16,7 @@ public class CastController : MonoBehaviour, IInputController {
 
     // Use this for initialization
     void Start () {
+        //TODO don't do this
         SetParentPlayerController();
 	}
 	

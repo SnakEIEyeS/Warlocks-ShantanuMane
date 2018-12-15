@@ -10,6 +10,7 @@ public class UnitOverheadUI : MonoBehaviour {
 
     [SerializeField]
     private Canvas UnitInfoCanvas = null;
+    public Canvas OverheadUICanvas { get { return UnitInfoCanvas; } }
     [SerializeField]
     private Image m_HealthBar = null;
     private Health m_UnitHealthRef = null;
@@ -22,9 +23,12 @@ public class UnitOverheadUI : MonoBehaviour {
         m_MainCamera = GameObject.FindWithTag("MainCamera");
 
         Text PlayerName = UnitInfoCanvas.GetComponentInChildren<Text>();
-        PlayerName.text = m_Unit.Owner.Name;
 
-        m_UnitHealthRef = m_Unit.getHealth();
+        if(m_Unit)
+        {
+            PlayerName.text = m_Unit.Owner.Name;
+            m_UnitHealthRef = m_Unit.getHealth();
+        }
     }
 	
 	// Update is called once per frame
@@ -35,9 +39,13 @@ public class UnitOverheadUI : MonoBehaviour {
             UnitInfoCanvas.transform.rotation = m_MainCamera.transform.rotation;
         }
 
-        if (m_HealthBar)
+        if (m_HealthBar && m_UnitHealthRef)
         {
             m_HealthBar.fillAmount = m_UnitHealthRef.Current / m_UnitHealthRef.Max;
+        }
+        else
+        {
+            Debug.LogWarning("Components not found on UnitOverheadUI");
         }
     }
 }

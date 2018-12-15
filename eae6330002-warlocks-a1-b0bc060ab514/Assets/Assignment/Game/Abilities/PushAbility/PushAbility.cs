@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class PushAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantiableAbility, IStatusEffectAbility
 {
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
 
     private PlayerController m_InstigatorController = null;
     private UnitController m_Caster = null;
@@ -43,14 +47,17 @@ public class PushAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantia
     }
     public void AbilityExecute()
     {
-        Push();
+        //Push();
+        m_PhotonView.RPC("Push", PhotonNetwork.MasterClient);
     }
     public void AbilityEnd()
     {
         //m_Caster.ReturnAbility(this.gameObject);
         m_Caster = null;
         m_InstigatorController = null;
-        m_AbilityPool.Return(this.gameObject);
+        //m_AbilityPool.Return(this.gameObject);
+
+        PhotonNetwork.Destroy(this.gameObject);
     }
     #endregion
 
@@ -62,6 +69,11 @@ public class PushAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantia
     public IStatusEventBus StatusEventBus { get { return m_StatusEventBus; } set { m_StatusEventBus = value as StatusEventBus; } }
     #endregion
 
+    void Awake()
+    {
+        GameObject CasterGO = PhotonView.Find((int)m_PhotonView.InstantiationData[0]).gameObject;
+        m_Caster = CasterGO.GetComponentInChildren<UnitController>();
+    }
 
     // Use this for initialization
     void Start () {
@@ -80,13 +92,23 @@ public class PushAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantia
     {
         if (m_Caster && m_Caster == i_UnitController)
         {
-            m_CastDirection = i_Direction;
+            //m_CastDirection = i_Direction;
+            m_PhotonView.RPC("RPC_SetCastDirection", PhotonNetwork.MasterClient, i_Direction);
         }
     }
 
+    [PunRPC]
+    private void RPC_SetCastDirection(Vector3 i_Direction)
+    {
+        m_CastDirection = i_Direction;
+    }
+
+    [PunRPC]
     private void Push()
     {
         print("PUSH!");
+
+        m_StatusEventBus = GameDataManager.Instance.StatusEventBus as StatusEventBus;
 
         Vector3 CasterLocation = m_Caster.getControlledUnit().transform.position;
         //Vector3 rayStart = new Vector3(transform.position.x, transform.position.y + 1f, transform.position.z);

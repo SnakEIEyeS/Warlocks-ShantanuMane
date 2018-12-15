@@ -2,7 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class Game : MonoBehaviour, IGame {
+
+    public static Game GameInstance;
+
+    [SerializeField]
+    private PhotonView m_GamePhotonView = null;
+    public PhotonView GamePhotonView { get { return m_GamePhotonView; } }
 
     [SerializeField]
     private App app = null;
@@ -27,51 +35,79 @@ public class Game : MonoBehaviour, IGame {
     private Canvas m_GameUI = null;
 
     #region IGame
+    public Round RoundInstance { get { return m_RoundHandler; } }
     public List<Player> PlayersInGame { get { return m_PlayersInGame; } }
     public List<Unit> UnitsInGame { get { return m_UnitsInGame; } }
     public IGameDataManager GameDataManager { get { return m_GameDataManager; } set { m_GameDataManager = value as GameDataManager; } }
     public IGameEventBus GameEventBus { get { return m_GameEventBus; } }
     #endregion
 
+    private void Awake()
+    {
+        GameInstance = this;
+    }
+
     private void Start()
     {
         m_GameEventBus.OnStoreClose.AddListener(OnStoreCloseStartRound);
-        m_RoundHandler.OnPhaseChanged.AddListener(OnRoundPhaseChange);
+
+        if(PhotonNetwork.IsMasterClient)
+        {
+            m_RoundHandler.OnPhaseChanged.AddListener(OnRoundPhaseChange);
+        }
+        
         //OnPreRound(m_RoundHandler);
         //m_RoundHandler.StartRound();
-        m_RoundHandler.RestartRound();
+
+        //This is the one that was used and worked
+        //m_RoundHandler.RestartRound();
     }
 
     private void Update()
     {
         if(Input.GetKeyDown("escape"))
         {
-            app.Scenes.GoToMainMenu();
+            Warlocks.GameManager.Instance.LeaveRoom();
         }
     }
 
-    void OnRoundPhaseChange(Round round)
+    public void StartGame()
     {
-        switch (round.Phase)
+        m_RoundHandler.RestartRound();
+    }
+
+    void OnRoundPhaseChange(Round i_Round)
+    {
+        if(PhotonNetwork.IsMasterClient)
         {
-            case RoundPhase.PreRound:
-               OnPreRound(round);
-                break;
-            case RoundPhase.InProgress:
-                OnRoundStart();
-                break;
-            case RoundPhase.Celebration:
-                OnRoundOutcome(round);
-                break;
-            case RoundPhase.Completed:
-                OnRoundCompleted(round);
-                break;
+            switch (i_Round.Phase)
+            {
+                case RoundPhase.PreRound:
+                    OnPreRound(i_Round.RoundPhotonView.ViewID);
+                    m_GamePhotonView.RPC("OnPreRound", RpcTarget.Others, i_Round.RoundPhotonView.ViewID);
+                    break;
+                case RoundPhase.InProgress:
+                    OnRoundStart();
+                    m_GamePhotonView.RPC("OnRoundStart", RpcTarget.Others);
+                    break;
+                case RoundPhase.Celebration:
+                    OnRoundOutcome(i_Round.RoundPhotonView.ViewID, ((Player)i_Round.Winner).PlayerPhotonView.ViewID);
+                    m_GamePhotonView.RPC("OnRoundOutcome", RpcTarget.Others, 
+                        i_Round.RoundPhotonView.ViewID, ((Player)i_Round.Winner).PlayerPhotonView.ViewID);
+                    break;
+                case RoundPhase.Completed:
+                    OnRoundCompleted(i_Round.RoundPhotonView.ViewID);
+                    m_GamePhotonView.RPC("OnRoundCompleted", RpcTarget.Others, i_Round.RoundPhotonView.ViewID);
+                    break;
+            }
         }
+        
     }
 
-    private void OnPreRound(Round i_Round)
+    [PunRPC]
+    private void OnPreRound(int i_RoundPhotonViewID)
     {
-        GameEventBus.OnGamePreRound.Invoke(i_Round);
+        GameEventBus.OnGamePreRound.Invoke(i_RoundPhotonViewID);
         PrepUnits();
     }
     //Tell all units in the game to handle their spawning
@@ -85,17 +121,22 @@ public class Game : MonoBehaviour, IGame {
 
     private void OnStoreCloseStartRound(Store i_Store)
     {
-        m_RoundHandler.StartRound();
+        if(PhotonNetwork.IsMasterClient)
+        {
+            m_RoundHandler.StartRound();
+        }
     }
 
+    [PunRPC]
     private void OnRoundStart()
     {
         //m_GameUI.enabled = false;
     }
 
-    private void OnRoundOutcome(Round i_Round)
+    [PunRPC]
+    private void OnRoundOutcome(int i_RoundPhotonViewID, int i_RoundWinnerPhotonViewID)
     {
-        m_GameEventBus.OnGameRoundOutcome.Invoke(i_Round);
+        m_GameEventBus.OnGameRoundOutcome.Invoke(i_RoundPhotonViewID, i_RoundWinnerPhotonViewID);
        // UpdatePostRoundUI();
         //m_GameUI.enabled = true;
     }
@@ -107,13 +148,21 @@ public class Game : MonoBehaviour, IGame {
         }
     }
 
-    private void OnRoundCompleted(Round i_Round)
+    [PunRPC]
+    private void OnRoundCompleted(int i_RoundPhotonViewID)
     {
-        m_GameEventBus.OnGameRoundComplete.Invoke(i_Round);
-        if(!CheckGameEnd())
+        
+        if(PhotonNetwork.IsMasterClient)
         {
-            i_Round.RestartRound();
+            if (!CheckGameEnd())
+            {
+                Debug.LogWarning("Master says Round is complete!");
+                Round RoundHandler = PhotonView.Find(i_RoundPhotonViewID).gameObject.GetComponentInChildren<Round>();
+                RoundHandler.RestartRound();
+            }
         }
+        m_GameEventBus.OnGameRoundComplete.Invoke(i_RoundPhotonViewID);
+
     }
 
     //Check to see if a Player has won the game

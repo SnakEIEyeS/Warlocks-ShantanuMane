@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class GoldManager : MonoBehaviour, IGoldManager {
 
     //[SerializeField]
@@ -70,16 +72,24 @@ public class GoldManager : MonoBehaviour, IGoldManager {
         m_GoldScoreboard[i_Player] -= i_GoldAmount;
     }
 
-    private void AwardRoundWinner(Round i_Round)
+    private void AwardRoundWinner(int i_RoundPhotonViewID, int i_WinnerPhotonViewID)
     {
-        AwardPlayerGold(i_Round.Winner, m_RoundWinnerGold);
+        if(PhotonNetwork.IsMasterClient)
+        {
+            IPlayer RoundWinnerPlayer = PhotonView.Find(i_WinnerPhotonViewID).gameObject.GetComponentInChildren<IPlayer>();
+            AwardPlayerGold(RoundWinnerPlayer, m_RoundWinnerGold);
+        }
+        
     }
 
-    private void AwardRoundCompleteGold(Round i_Round)
+    private void AwardRoundCompleteGold(int i_RoundPhotonViewID)
     {
-        foreach(Player player in m_Game.PlayersInGame)
+        if(PhotonNetwork.IsMasterClient)
         {
-            AwardPlayerGold(player, m_RoundCompleteGold);
+            foreach (Player player in m_Game.PlayersInGame)
+            {
+                AwardPlayerGold(player, m_RoundCompleteGold);
+            }
         }
     }
 }

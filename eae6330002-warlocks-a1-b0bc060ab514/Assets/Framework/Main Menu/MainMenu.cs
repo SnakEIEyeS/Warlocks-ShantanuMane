@@ -8,6 +8,11 @@ public class MainMenu : MonoBehaviour, IAppAware {
     private App app = null;
     public App App { get { return app; } set { app = value; } }
 
+    public void EnterLobby()
+    {
+        app.Scenes.GoToLobby();
+    }
+
     public void StartGame() {
         app.Scenes.LoadGame();
     }

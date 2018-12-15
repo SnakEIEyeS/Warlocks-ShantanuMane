@@ -7,6 +7,8 @@ public interface IAbility {
     IPlayerController Instigator { get; set; }
     IUnitController Caster { get; set; }
 
+    //void SetCaster(UnitController i_UnitController);
+
     //AbilityTargetType TargetType { get; }
     //float Cooldown { get; set; }
 

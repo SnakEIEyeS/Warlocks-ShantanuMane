@@ -30,12 +30,12 @@ public class GameUI : MonoBehaviour {
 		
 	}
 
-    public void ShowScoreScreen(Round i_Round)
+    public void ShowScoreScreen(int i_RoundPhotonViewID, int i_RoundWinnerPhotonViewID)
     {
         UpdatePlayerRecords();
         m_ScoreScreen.enabled = true;
     }
-    public void HideScoreScreen(Round i_Round)
+    public void HideScoreScreen(int i_RoundPhotonViewID)
     {
         print("HideScoreScreen called");
         UpdatePlayerRecords();

@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class SpellShieldAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantiableAbility, IStatusEffectAbility
 {
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
+
     private PlayerController m_InstigatorController = null;
     private UnitController m_Caster = null;
 
@@ -44,13 +49,15 @@ public class SpellShieldAbility : MonoBehaviour, IAbility, ICastableAbility, IIn
     }
     public void AbilityExecute()
     {
-        SpellShield();
+        //SpellShield();
+        m_PhotonView.RPC("SpellShield", PhotonNetwork.MasterClient);
     }
     public void AbilityEnd()
     {
         m_Caster = null;
         m_InstigatorController = null;
-        m_AbilityPool.Return(this.gameObject);
+        //m_AbilityPool.Return(this.gameObject);
+        PhotonNetwork.Destroy(this.gameObject);
     }
     #endregion
 
@@ -62,6 +69,11 @@ public class SpellShieldAbility : MonoBehaviour, IAbility, ICastableAbility, IIn
     public IStatusEventBus StatusEventBus { get { return m_StatusEventBus; } set { m_StatusEventBus = value as StatusEventBus; } }
     #endregion
 
+    void Awake()
+    {
+        GameObject CasterGO = PhotonView.Find((int)m_PhotonView.InstantiationData[0]).gameObject;
+        m_Caster = CasterGO.GetComponentInChildren<UnitController>();
+    }
 
     // Use this for initialization
     void Start()
@@ -72,18 +84,20 @@ public class SpellShieldAbility : MonoBehaviour, IAbility, ICastableAbility, IIn
     // Update is called once per frame
     void Update()
     {
-        if(m_bSpellShieldActive)
+        if(m_bSpellShieldActive && m_PhotonView.IsMine)
         {
             this.transform.root.position = m_Caster.getControlledUnit().transform.position;
         }
     }
 
+    [PunRPC]
     private void SpellShield()
     {
         IStatusAffectable CasterStatusAffectable = 
             m_Caster.getControlledUnit().transform.root.gameObject.GetComponentInChildren<IStatusAffectable>();
         if(CasterStatusAffectable != null)
         {
+            m_StatusEventBus = GameDataManager.Instance.StatusEventBus as StatusEventBus;
             m_StatusEventBus.SpellImmunityEvent.Invoke(m_Caster.getControlledUnit(), true);
         }
         this.transform.position = m_Caster.getControlledUnit().transform.position;
@@ -100,9 +114,10 @@ public class SpellShieldAbility : MonoBehaviour, IAbility, ICastableAbility, IIn
             m_Caster.getControlledUnit().transform.root.gameObject.GetComponentInChildren<IStatusAffectable>();
         if (CasterStatusAffectable != null)
         {
+            m_StatusEventBus = GameDataManager.Instance.StatusEventBus as StatusEventBus;
             m_StatusEventBus.SpellImmunityEvent.Invoke(m_Caster.getControlledUnit(), false);
         }
-        this.transform.position = (m_AbilityPool as MonoBehaviour).transform.position;
+        //this.transform.position = (m_AbilityPool as MonoBehaviour).transform.position;
         m_bSpellShieldActive = false;
         m_ShieldSphereCollider.enabled = false;
 
@@ -119,11 +134,23 @@ public class SpellShieldAbility : MonoBehaviour, IAbility, ICastableAbility, IIn
                 if(other.transform.root.GetComponentInChildren<IMovingAbility>() != null )
                     //&& otherAbility.Caster != this.Caster && otherAbility.Instigator != this.Instigator)
                 {
-                    other.transform.root.forward = -other.transform.root.forward;
-                    print(other.transform.root.gameObject.name + " triggered by spell shield");
+                    //other.transform.root.forward = -other.transform.root.forward;
+                    //print(other.transform.root.gameObject.name + " triggered by spell shield");
+
+                    PhotonView OtherAbilityPhotonView = other.transform.root.gameObject.GetComponentInChildren<PhotonView>();
+                    m_PhotonView.RPC("ReflectAbility", OtherAbilityPhotonView.Owner, OtherAbilityPhotonView.ViewID);
                 }
                 
             }
         }
     }
+
+    [PunRPC]
+    private void ReflectAbility(int i_OtherAbilityViewID)
+    {
+        GameObject OtherAbilityGO = PhotonView.Find(i_OtherAbilityViewID).gameObject;
+        OtherAbilityGO.transform.forward = -(OtherAbilityGO.transform.forward);
+        print(OtherAbilityGO.name + " triggered by spell shield");
+    }
+
 }

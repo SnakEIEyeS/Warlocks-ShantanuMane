@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+using Photon.Pun;
+
 public class UnitController : MonoBehaviour, IUnitController {
+
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
 
     [SerializeField]
     private Unit m_ControlledUnit = null;
@@ -31,8 +36,11 @@ public class UnitController : MonoBehaviour, IUnitController {
 
     [SerializeField]
     private WarlockAnimationScript m_WarlockAnimScript = null;
+    [SerializeField]
+    private PhotonView m_AnimationPhotonView = null;
+    public PhotonView AnimationPhotonView { get { return m_AnimationPhotonView; } }
 
-#region IUnitController
+    #region IUnitController
     public bool HasReachedDestination { get { return !m_MoveTarget.HasValue; } }
     public void MoveTo(Vector3 targetPosition)
     {
@@ -49,19 +57,38 @@ public class UnitController : MonoBehaviour, IUnitController {
     }
     #endregion
 
+    private void Awake()
+    {
+        
+    }
     private void Start()
     {
+        
+    }
+
+    public void Init()
+    {
+        m_Map = GameDataManager.Instance.GameMap;
+        m_AbilityFactory = GameDataManager.Instance.AbilityFactory;
+        m_AbilityEventBus = GameDataManager.Instance.AbilityEventBus as AbilityEventBus;
+
         m_UnitStatusAffectable = m_ControlledUnit.GetComponentInChildren<IStatusAffectable>();
 
-        m_AbilityEventBus.OnDirectionTargeted.AddListener(AbilityDirectionTargeted);
-        m_AbilityEventBus.OnPointTargeted.AddListener(AbilityPointTargeted);
-        m_AbilityEventBus.OnTargetingCanceled.AddListener(CancelAbilityTargeting);
+        if (m_ControlledUnit.UnitPhotonView.IsMine)
+        {
+            m_AbilityEventBus.OnDirectionTargeted.AddListener(AbilityDirectionTargeted);
+            m_AbilityEventBus.OnPointTargeted.AddListener(AbilityPointTargeted);
+            m_AbilityEventBus.OnTargetingCanceled.AddListener(CancelAbilityTargeting);
+        }
     }
     private void Update()
     {
-        UpdateTranslation();
-        UpdateRotation();
-        UpdateMapPosition();
+        if(m_ControlledUnit.UnitPhotonView.IsMine)
+        {
+            UpdateTranslation();
+            UpdateRotation();
+            UpdateMapPosition();
+        }
     }
 
     public Unit getControlledUnit()
@@ -166,18 +193,21 @@ public class UnitController : MonoBehaviour, IUnitController {
             }*/
 
             List<AbilityHolder> AbilityHolderList = m_ControlledUnit.getAbilityHolderList();
-            if (AbilityHolderList[i_AbilityIndex]!=null && !AbilityHolderList[i_AbilityIndex].OnCooldown)
+            //if (AbilityHolderList[i_AbilityIndex]!=null && !AbilityHolderList[i_AbilityIndex].OnCooldown)
             {
-                IObjectPool<GameObject> AbilityPool = m_AbilityFactory.Get(AbilityHolderList[i_AbilityIndex].Ability);
-                GameObject AbilityGO = AbilityPool.Get();
+                //IObjectPool<GameObject> AbilityPool = m_AbilityFactory.Get(AbilityHolderList[i_AbilityIndex].Ability);
+                //GameObject AbilityGO = AbilityPool.Get();
+                object[] AbilityInstantiationData = new object[1];
+                AbilityInstantiationData[0] = m_PhotonView.ViewID;
+                GameObject AbilityGO = PhotonNetwork.Instantiate(AbilityHolderList[i_AbilityIndex].Ability.name, Vector3.zero, Quaternion.identity, 0, AbilityInstantiationData);
                 IAbility AbilityRef = AbilityGO.GetComponentInChildren<IAbility>();
                 if (AbilityRef != null)
                 {
                     //TODO AbilityRef.Instigator = need to get IPlayerController
                     m_AbilityRef = AbilityGO;
-                    m_AbilityHolderRef = AbilityHolderList[i_AbilityIndex];
+                    //m_AbilityHolderRef = AbilityHolderList[i_AbilityIndex];
                     AbilityRef.Caster = this;
-
+                    AbilityGO.GetComponentInChildren<PhotonView>().TransferOwnership(PhotonNetwork.MasterClient);
                     return m_AbilityRef;
                 }
             }
@@ -211,7 +241,7 @@ public class UnitController : MonoBehaviour, IUnitController {
             m_AbilityEventBus.OnCastComplete.Invoke(this);
             m_WarlockAnimScript.SetCasting(false);
             m_AbilityRef = null;
-            m_AbilityHolderRef = null;
+            //m_AbilityHolderRef = null;
         }
     }
     private void CancelAbilityTargeting(UnitController i_UnitController)
@@ -231,10 +261,10 @@ public class UnitController : MonoBehaviour, IUnitController {
             m_AbilityRef.GetComponentInChildren<ICastableAbility>().AbilityEnd();
             m_AbilityRef = null;
         }
-        if (m_AbilityHolderRef != null)
+        /*if (m_AbilityHolderRef != null)
         {
             m_AbilityHolderRef = null;
-        }
+        }*/
     }
 
     private void AbilityDirectionTargeted(UnitController i_UnitController, Vector3 i_Direction)

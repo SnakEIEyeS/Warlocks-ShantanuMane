@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class StealthAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantiableAbility, IStatusEffectAbility
 {
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
 
     private PlayerController m_InstigatorController = null;
     private UnitController m_Caster = null;
@@ -50,7 +54,8 @@ public class StealthAbility : MonoBehaviour, IAbility, ICastableAbility, IInstan
         m_Caster = null;
         m_InstigatorController = null;
 
-        m_AbilityPool.Return(this.gameObject);
+        //m_AbilityPool.Return(this.gameObject);
+        PhotonNetwork.Destroy(this.gameObject);
     }
     #endregion
 
@@ -61,6 +66,12 @@ public class StealthAbility : MonoBehaviour, IAbility, ICastableAbility, IInstan
     #region IStatusEffectAbility
     public IStatusEventBus StatusEventBus { get { return m_StatusEventBus; } set { m_StatusEventBus = value; } }
     #endregion
+
+    void Awake()
+    {
+        GameObject CasterGO = PhotonView.Find((int)m_PhotonView.InstantiationData[0]).gameObject;
+        m_Caster = CasterGO.GetComponentInChildren<UnitController>();
+    }
 
     // Use this for initialization
     void Start()
@@ -76,13 +87,25 @@ public class StealthAbility : MonoBehaviour, IAbility, ICastableAbility, IInstan
 
     private void TriggerInvisibility()
     {
-        if (m_StatusEventBus == null)
+        ListenForInvisBreakActions();
+
+        /*if (m_StatusEventBus == null)
         {
             m_StatusEventBus = FindObjectOfType<StatusEventBus>();
         }
         m_StatusEventBus.InvisibilityEvent.Invoke(m_Caster.getControlledUnit(), true);
 
-        ListenForInvisBreakActions();
+        Invoke("EndInvisibility", m_Duration);*/
+
+        m_PhotonView.RPC("RPC_TriggerInvisibility", PhotonNetwork.MasterClient);
+    }
+
+    [PunRPC]
+    private void RPC_TriggerInvisibility()
+    {
+        m_StatusEventBus = GameDataManager.Instance.StatusEventBus as StatusEventBus;
+        m_StatusEventBus.InvisibilityEvent.Invoke(m_Caster.getControlledUnit(), true);
+
         Invoke("EndInvisibility", m_Duration);
     }
 
@@ -96,10 +119,21 @@ public class StealthAbility : MonoBehaviour, IAbility, ICastableAbility, IInstan
 
     private void EndInvisibility()
     {
-        if (m_StatusEventBus == null)
+        /*if (m_StatusEventBus == null)
         {
             m_StatusEventBus = FindObjectOfType<StatusEventBus>();
         }
+        m_StatusEventBus.InvisibilityEvent.Invoke(m_Caster.getControlledUnit(), false);
+        CancelInvoke("EndInvisibility");
+
+        AbilityEnd();*/
+        m_PhotonView.RPC("RPC_EndInvisibility", PhotonNetwork.MasterClient);
+    }
+
+    [PunRPC]
+    private void RPC_EndInvisibility()
+    {
+        m_StatusEventBus = GameDataManager.Instance.StatusEventBus as StatusEventBus;
         m_StatusEventBus.InvisibilityEvent.Invoke(m_Caster.getControlledUnit(), false);
         CancelInvoke("EndInvisibility");
 
@@ -108,13 +142,13 @@ public class StealthAbility : MonoBehaviour, IAbility, ICastableAbility, IInstan
 
     private void ListenForInvisBreakActions()
     {
-        AbilityEventBus abilityEventBus = FindObjectOfType<AbilityEventBus>();
+        AbilityEventBus abilityEventBus = GameDataManager.Instance.AbilityEventBus as AbilityEventBus;
         abilityEventBus.OnCastComplete.AddListener(BreakInvisibility);
     }
 
     private void StopListeningForInvisBreak()
     {
-        AbilityEventBus abilityEventBus = FindObjectOfType<AbilityEventBus>();
+        AbilityEventBus abilityEventBus = GameDataManager.Instance.AbilityEventBus as AbilityEventBus;
         abilityEventBus.OnCastComplete.RemoveListener(BreakInvisibility);
     }
 

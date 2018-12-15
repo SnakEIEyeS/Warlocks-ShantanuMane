@@ -41,6 +41,14 @@ public class AbilityFactory : MonoBehaviour, IObjectFactory<AbilityObjectPool, G
 
     }
 
+    public void Init()
+    {
+        foreach (AbilityObjectPool GOPool in m_AbilityObjectPools)
+        {
+            GOPool.Init();
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {

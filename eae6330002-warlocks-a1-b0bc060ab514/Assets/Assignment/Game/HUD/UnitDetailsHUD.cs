@@ -7,6 +7,7 @@ public class UnitDetailsHUD : MonoBehaviour {
 
     [SerializeField]
     private LocalPlayerController m_LocalPlayerController = null;
+    public LocalPlayerController LocalPlayerController { get { return m_LocalPlayerController; } set { m_LocalPlayerController = value; } }
     private UnitController m_SelectedUnitController;
     private Unit m_SelectedUnit;
 
@@ -29,8 +30,10 @@ public class UnitDetailsHUD : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        setUnitDetailsInHUD();
-
+        if (m_SelectedUnit)
+        {
+            setUnitDetailsInHUD();
+        }
     }
 
     public void setSelectedUnit(UnitController i_UnitController)
@@ -43,6 +46,10 @@ public class UnitDetailsHUD : MonoBehaviour {
             if(m_SelectedUnit)
             {
                 setUnitReferences();
+            }
+            else
+            {
+                Debug.LogError("Unit references not set by UnitDetailsHUD: " + gameObject.name);
             }
         }
     }

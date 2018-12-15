@@ -13,13 +13,22 @@ public class Scenes : MonoBehaviour {
     private string loadingScreenSceneName = "LoadingScreen";
 
     [SerializeField]
+    private string lobbySceneName = "Lobby";
+
+    [SerializeField]
     private string gameSceneName = "WarlocksGame";
+    public string GameSceneName { get { return gameSceneName; } }
 
     [SerializeField]
     private string mainMenuSceneName = "MainMenu";
 
     public void GoToMainMenu() {
         LoadScene(mainMenuSceneName, false);
+    }
+
+    public void GoToLobby()
+    {
+        LoadScene(lobbySceneName, false);
     }
 
     public void LoadGame() {

@@ -4,8 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IInventoryHolder,
+using Photon.Pun;
+
+public class Unit : MonoBehaviour, IPunObservable, IUnit, IUnitStatistics, IInventoryHolder,
     IDamageable, IDamageInflicter, IStatusAffectable {
+
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
+    public PhotonView UnitPhotonView { get { return m_PhotonView; } }
 
     #region Unit
     [SerializeField]
@@ -96,6 +102,7 @@ public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IInventoryHolder,
     [SerializeField]
     private GameObject m_DeathRagdoll = null;
 
+    //pass it in as a PhotonViewID
     [SerializeField]
     private GameObject m_SpawnPoint = null;
 
@@ -147,6 +154,29 @@ public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IInventoryHolder,
     public bool AbilityCastBlocked { get { return m_bAbilityCastBlocked; } set { m_bAbilityCastBlocked = value; } }
     #endregion
 
+    #region IPunObservable
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if(stream.IsWriting)
+        {
+            stream.SendNext(MovementBlocked);
+            stream.SendNext(AbilityCastBlocked);
+        }
+        else
+        {
+            MovementBlocked = (bool)stream.ReceiveNext();
+            AbilityCastBlocked = (bool)stream.ReceiveNext();
+        }
+    }
+
+    #endregion
+
+    private void Awake()
+    {
+        
+    }
+
     void Start()
     {
         if(m_Owner)
@@ -157,6 +187,25 @@ public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IInventoryHolder,
         NormalMaterial = m_MeshRenderer.material;
 
         m_UnitStatisticsController.Init(this, m_MoveSpeedBase, m_TurnRateBase);
+    }
+
+    public void Init()
+    {
+        //PhotonView AttachedPhotonView = GetComponentInChildren<PhotonView>();
+        if (m_PhotonView.IsMine)
+        {
+            int SpawnPointIndex = (int)m_PhotonView.InstantiationData[0];
+            m_SpawnPoint = GameDataManager.Instance.SpawnPoints[SpawnPointIndex];
+        }
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            RegisterUnitInGame();
+        }
+        /*else
+        {
+            UnitPhotonView.RPC("RegisterUnitInGame", RpcTarget.MasterClient);
+        }*/
     }
 
     void Update()
@@ -195,25 +244,47 @@ public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IInventoryHolder,
     { return m_AbilityHolderList; }
 
     //Spawn self at appropriate location after death
+    [PunRPC]
     public void SpawnSelf()
     {
-        gameObject.transform.position = m_SpawnPoint.transform.position;
+        if(m_PhotonView.IsMine)
+        {
+            /*if (m_SpawnPoint)
+            {
+                gameObject.transform.position = m_SpawnPoint.transform.position;
+            }
+            else
+            {
+                gameObject.transform.position = Vector3.zero;
+            }*/
 
-        //setCanMove(true);
-        m_UnitHealthHandler.enabled = true;
+            GameObject IslandGO = GameDataManager.Instance.GameIsland.gameObject;
+            float SpawnRadius = IslandGO.GetComponentInChildren<MeshRenderer>().transform.localScale.x / 2 * 0.85f;
+            Vector2 SpawnPt2D = UnityEngine.Random.insideUnitCircle * SpawnRadius;
+            gameObject.transform.position = IslandGO.transform.position + new Vector3(SpawnPt2D.x, 0.0f, SpawnPt2D.y);
+            
+            //setCanMove(true);
+            m_UnitHealthHandler.enabled = true;
 
-        //TODO make HealEventBus and trigger a HealEvent
-        //m_UnitHealthHandler.Health.Current = m_UnitHealthHandler.Health.Max;
+            //TODO make HealEventBus and trigger a HealEvent
+            //m_UnitHealthHandler.Health.Current = m_UnitHealthHandler.Health.Max;
+            m_UnitHealthHandler.RefillHealthOnSpawn();
 
-        gameObject.GetComponentInChildren<UnitOverheadUI>().enabled = true;
-        //GetComponentInChildren<Ragdoll>().getAliveParent().gameObject.SetActive(true);
-        //GetComponentInChildren<Ragdoll>().AlignRagdoll();
-        //m_DeathRagdoll.SetActive(false);
-        m_CapsuleCollider.enabled = true;
+            gameObject.GetComponentInChildren<UnitOverheadUI>().enabled = true;
+            //GetComponentInChildren<Ragdoll>().getAliveParent().gameObject.SetActive(true);
+            //GetComponentInChildren<Ragdoll>().AlignRagdoll();
+            //m_DeathRagdoll.SetActive(false);
+            m_CapsuleCollider.enabled = true;
 
-        //Unblock Unit Action
-        m_bMovementBlocked = false;
-        m_bAbilityCastBlocked = false;
+            //Unblock Unit Action
+            m_bMovementBlocked = false;
+            m_bAbilityCastBlocked = false;
+        }
+        else if(PhotonNetwork.IsMasterClient)
+        {
+            m_PhotonView.RPC("SpawnSelf", m_PhotonView.Owner);
+        }
+        
     }
 
     //Handle unit death
@@ -241,4 +312,15 @@ public class Unit : MonoBehaviour, IUnit, IUnitStatistics, IInventoryHolder,
     { return bCanMove; }
     public void setCanMove(bool i_CanMove)
     { bCanMove = i_CanMove; }*/
+
+
+    #region Photon related
+
+    [PunRPC]
+    private void RegisterUnitInGame()
+    {
+        Game.GameInstance.UnitsInGame.Add(this);
+    }
+
+    #endregion
 }

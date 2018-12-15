@@ -60,7 +60,7 @@ public class AggressiveAIController : AIPlayerController {
         if (m_FightUtility >= m_FleeUtility)
         {
             //Fight!
-            print(transform.gameObject + " wants to Fight!");
+            //print(transform.gameObject + " wants to Fight!");
             m_CurrentAction = AIAction.Fight;
             if(m_FightTarget == null)
             {

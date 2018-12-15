@@ -2,9 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class FireballAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantiableAbility, 
     IStatusEffectAbility, IMovingAbility, IDamagingAbility
 {
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
+    [SerializeField]
+    private PhotonView m_MeshPhotonView = null;
 
     private PlayerController m_InstigatorController = null;
     private UnitController m_Caster = null;
@@ -52,7 +58,8 @@ public class FireballAbility : MonoBehaviour, IAbility, ICastableAbility, IInsta
     }
     public void AbilityExecute()
     {
-        ShootFireball();
+        //ShootFireball();
+        m_PhotonView.RPC("ShootFireball", PhotonNetwork.MasterClient);
     }
     public void AbilityEnd()
     {
@@ -60,7 +67,8 @@ public class FireballAbility : MonoBehaviour, IAbility, ICastableAbility, IInsta
         m_Caster = null;
         m_InstigatorController = null;
 
-        m_AbilityPool.Return(this.gameObject);
+        //m_AbilityPool.Return(this.gameObject);
+        PhotonNetwork.Destroy(this.gameObject);
     }
     #endregion
 
@@ -80,6 +88,13 @@ public class FireballAbility : MonoBehaviour, IAbility, ICastableAbility, IInsta
     public IDamageEventBus DamageEventBus { get { return m_DamageEventBus; } set { m_DamageEventBus = value as DamageEventBus; } }
     #endregion
 
+    void Awake()
+    {
+        GameObject CasterGO = PhotonView.Find((int)m_PhotonView.InstantiationData[0]).gameObject;
+        m_Caster = CasterGO.GetComponentInChildren<UnitController>();
+        
+    }
+
     // Use this for initialization
     void Start () {
         AbilityEventBus abilityEventBus = (AbilityEventBus)FindObjectOfType<AbilityEventBus>();
@@ -87,11 +102,13 @@ public class FireballAbility : MonoBehaviour, IAbility, ICastableAbility, IInsta
 
         StatusEventBus = FindObjectOfType<StatusEventBus>();
         m_DamageEventBus = FindObjectOfType<DamageEventBus>();
+
+        m_MeshPhotonView.TransferOwnership(PhotonNetwork.MasterClient);
     }
 	
 	// Update is called once per frame
 	void Update () {
-		if(m_bFireballShooting)
+		if(m_bFireballShooting && m_PhotonView.IsMine)
         {
             MoveProjectile();
         }
@@ -101,11 +118,19 @@ public class FireballAbility : MonoBehaviour, IAbility, ICastableAbility, IInsta
     {
         if (m_Caster == i_UnitController)
         {
-            this.transform.root.forward = i_Direction;
+            //this.transform.root.forward = i_Direction;
 
             AbilityEventBus abilityEventBus = (AbilityEventBus)FindObjectOfType<AbilityEventBus>();
             abilityEventBus.OnDirectionTargeted.RemoveListener(SetDirection);
+
+            m_PhotonView.RPC("RPC_SetFireballDirection", PhotonNetwork.MasterClient, i_Direction);
         }
+    }
+
+    [PunRPC]
+    private void RPC_SetFireballDirection(Vector3 i_Direction)
+    {
+        this.transform.root.forward = i_Direction;
     }
 
     private void MoveProjectile()
@@ -114,9 +139,11 @@ public class FireballAbility : MonoBehaviour, IAbility, ICastableAbility, IInsta
         //Debug.Log(gameObject.transform.position);
     }
 
+    [PunRPC]
     private void ShootFireball()
     {
-        this.transform.root.position = m_Caster.getControlledUnit().transform.position;
+        Vector3 CasterPosition = m_Caster.getControlledUnit().transform.position;
+        this.transform.root.position = new Vector3(CasterPosition.x, CasterPosition.y + 5.0f, CasterPosition.z);
         m_SphereCollider.radius = m_Size / 2.0f;
         m_AbilityMesh.transform.localScale = new Vector3(m_Size, m_Size, m_Size);
 
@@ -128,7 +155,7 @@ public class FireballAbility : MonoBehaviour, IAbility, ICastableAbility, IInsta
     {
         if(m_bFireballShooting)
         {
-            if(other.transform.root != m_Caster.transform.root)
+            if(other.transform.root.gameObject != m_Caster.transform.root.gameObject)
             {
                 print("Fireball hit: " + other.transform.root.name);
                 /*Health otherHealth = other.transform.root.GetComponentInChildren<Health>();

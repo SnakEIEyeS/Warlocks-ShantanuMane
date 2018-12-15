@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TeleportAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantiableAbility {
+using Photon.Pun;
 
+public class TeleportAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantiableAbility
+{
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
+    
     private PlayerController m_InstigatorController = null;
     private UnitController m_Caster = null;
 
@@ -39,20 +44,28 @@ public class TeleportAbility : MonoBehaviour, IAbility, ICastableAbility, IInsta
     }
     public void AbilityExecute()
     {
-        Teleport();
+        //Teleport();
+        m_PhotonView.RPC("Teleport", m_Caster.getControlledUnit().UnitPhotonView.Owner);
     }
     public void AbilityEnd()
     {
         m_Caster = null;
         m_InstigatorController = null;
 
-        m_AbilityPool.Return(this.gameObject);
+        //m_AbilityPool.Return(this.gameObject);
+        PhotonNetwork.Destroy(this.gameObject);
     }
     #endregion
 
     #region IInstantiableAbility
     public IObjectPool<GameObject> AbilityPool { get { return m_AbilityPool; } set { m_AbilityPool = value; } }
     #endregion
+
+    void Awake()
+    {
+        GameObject CasterGO = PhotonView.Find((int)m_PhotonView.InstantiationData[0]).gameObject;
+        m_Caster = CasterGO.GetComponentInChildren<UnitController>();
+    }
 
     // Use this for initialization
     void Start () {
@@ -71,7 +84,7 @@ public class TeleportAbility : MonoBehaviour, IAbility, ICastableAbility, IInsta
     {
         if (m_Caster == i_UnitController)
         {
-            Vector3 CasterPosition = m_Caster.getControlledUnit().transform.position;
+            /*Vector3 CasterPosition = m_Caster.getControlledUnit().transform.position;
             if ((i_TargetPoint - CasterPosition).sqrMagnitude <= m_MaxDistance * m_MaxDistance)
             {
                 m_TeleportPoint = i_TargetPoint;
@@ -79,10 +92,27 @@ public class TeleportAbility : MonoBehaviour, IAbility, ICastableAbility, IInsta
             else
             {
                 m_TeleportPoint = CasterPosition + (i_TargetPoint - CasterPosition).normalized * m_MaxDistance;
-            }
+            }*/
+            m_PhotonView.RPC("RPC_SetTeleportLocation", PhotonNetwork.MasterClient, i_TargetPoint);
         }
     }
 
+    [PunRPC]
+    private void RPC_SetTeleportLocation(Vector3 i_TargetPoint)
+    {
+        //Vector3 CasterPosition = m_Caster.getControlledUnit().transform.position;
+        Vector3 CasterPosition = m_Caster.getControlledUnit().UnitPhotonView.transform.position;
+        if ((i_TargetPoint - CasterPosition).sqrMagnitude <= m_MaxDistance * m_MaxDistance)
+        {
+            m_TeleportPoint = i_TargetPoint;
+        }
+        else
+        {
+            m_TeleportPoint = CasterPosition + (i_TargetPoint - CasterPosition).normalized * m_MaxDistance;
+        }
+    }
+
+    [PunRPC]
     void Teleport()
     {
         m_Caster.getControlledUnit().transform.position = m_TeleportPoint;

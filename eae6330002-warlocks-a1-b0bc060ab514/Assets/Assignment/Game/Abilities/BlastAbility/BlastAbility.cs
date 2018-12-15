@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class BlastAbility : MonoBehaviour, IAbility, ICastableAbility, IInstantiableAbility, 
     IStatusEffectAbility, IDamagingAbility
 {
+    [SerializeField]
+    private PhotonView m_PhotonView = null;
 
     private PlayerController m_InstigatorController = null;
     private UnitController m_Caster = null;
@@ -53,14 +57,15 @@ public class BlastAbility : MonoBehaviour, IAbility, ICastableAbility, IInstanti
     }
     public void AbilityExecute()
     {
-        Blast();
+        m_PhotonView.RPC("Blast", RpcTarget.MasterClient);
     }
     public void AbilityEnd()
     {
         m_Caster = null;
         m_InstigatorController = null;
 
-        m_AbilityPool.Return(this.gameObject);
+        //m_AbilityPool.Return(this.gameObject);
+        PhotonNetwork.Destroy(this.gameObject);
     }
     #endregion
 
@@ -80,6 +85,12 @@ public class BlastAbility : MonoBehaviour, IAbility, ICastableAbility, IInstanti
     public IDamageEventBus DamageEventBus { get { return m_DamageEventBus; } set { m_DamageEventBus = value as DamageEventBus; } }
     #endregion
 
+    void Awake()
+    {
+        GameObject CasterGO = PhotonView.Find((int)m_PhotonView.InstantiationData[0]).gameObject;
+        m_Caster = CasterGO.GetComponentInChildren<UnitController>();
+    }
+
     // Use this for initialization
     void Start()
     {
@@ -93,6 +104,7 @@ public class BlastAbility : MonoBehaviour, IAbility, ICastableAbility, IInstanti
 
     }
 
+    [PunRPC]
     private void Blast()
     {
         DrawDebugRadiusLines();
@@ -101,6 +113,7 @@ public class BlastAbility : MonoBehaviour, IAbility, ICastableAbility, IInstanti
 
         foreach (Collider CaughtCollider in CollidersInBlast)
         {
+            m_StatusEventBus = GameDataManager.Instance.StatusEventBus as StatusEventBus;
             UnitController hitUnitController = CaughtCollider.transform.root.GetComponentInChildren<UnitController>();
             if (hitUnitController && hitUnitController != m_Caster)
             {
@@ -115,6 +128,7 @@ public class BlastAbility : MonoBehaviour, IAbility, ICastableAbility, IInstanti
                         ); 
                 }
 
+                m_DamageEventBus = GameDataManager.Instance.DamageEventBus as DamageEventBus;
                 if (m_DamageEventBus)
                 {
                     bool DamageAttemptSuccess = m_DamageEventBus.DamageAttempt(

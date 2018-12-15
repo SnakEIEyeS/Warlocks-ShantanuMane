@@ -4,6 +4,7 @@ using UnityEngine;
 
 public interface IGame
 {
+    Round RoundInstance { get; }
     List<Player> PlayersInGame { get; }
     List<Unit> UnitsInGame { get; }
 

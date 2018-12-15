@@ -55,6 +55,14 @@ public class PlayerDefaultController : MonoBehaviour, IInputController {
     }
     #endregion
 
+
+    public void Init(UnitDetailsHUD i_HUD, IUnitController i_UnitController, Map i_Map)
+    {
+        m_UnitDetailsHUD = i_HUD;
+        m_SelectedUnit = i_UnitController as UnitController;
+        map = i_Map;
+    }
+
     // Use this for initialization
     void Start () {
         SelectHero();

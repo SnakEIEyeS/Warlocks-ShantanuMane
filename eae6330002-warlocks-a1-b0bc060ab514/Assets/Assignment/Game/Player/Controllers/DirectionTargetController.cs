@@ -35,6 +35,14 @@ public class DirectionTargetController : MonoBehaviour, IInputController {
 
     }
 #endregion
+
+    public void Init(IUnitController i_UnitController, Map i_Map, IAbilityEventBus i_AbilityEventBus)
+    {
+        m_SelectedUnit = i_UnitController as UnitController;
+        map = i_Map;
+        m_AbilityEventBus = i_AbilityEventBus as AbilityEventBus;
+    }
+
     // Use this for initialization
     void Start () {
         //m_AbilityEventBus.OnDirectionTargeted.AddListener(WriteDirection);
@@ -69,4 +77,9 @@ public class DirectionTargetController : MonoBehaviour, IInputController {
     {
         print(i_UnitController);
     }*/
+
+    public void SetSelectedUnit(IUnitController i_UnitController)
+    {
+        m_SelectedUnit = i_UnitController as UnitController;
+    }
 }

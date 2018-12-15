@@ -28,4 +28,9 @@ public class PlayerController : MonoBehaviour, IPlayerController {
         m_SelectedUnit = i_UnitController;
     }
 
+    public List<Unit> GetOwnedUnits()
+    {
+        return m_OwnedUnits;
+    }
+
 }
