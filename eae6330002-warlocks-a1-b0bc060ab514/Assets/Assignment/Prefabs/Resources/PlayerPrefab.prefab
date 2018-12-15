@@ -1,0 +1,160 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1171307634982906}
+  m_IsPrefabParent: 1
+--- !u!1 &1171307634982906
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4051579848015938}
+  - component: {fileID: 114666574275599560}
+  - component: {fileID: 114399145871187928}
+  - component: {fileID: 114274756095023488}
+  - component: {fileID: 114644287762346158}
+  - component: {fileID: 114582920080217326}
+  - component: {fileID: 114494469600736026}
+  - component: {fileID: 114867845896233312}
+  m_Layer: 0
+  m_Name: PlayerPrefab
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4051579848015938
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1171307634982906}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 283.1615, y: 39.641014, z: 88.25571}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114274756095023488
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1171307634982906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a3f19cadbe9efe479ca577c6d271989, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_UnitDetailsHUD: {fileID: 0}
+  m_SelectedUnit: {fileID: 0}
+  map: {fileID: 0}
+  m_ParentPlayerController: {fileID: 114399145871187928}
+--- !u!114 &114399145871187928
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1171307634982906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 215743f140ae44e8fa39dbd2c18bcb78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Player: {fileID: 114666574275599560}
+  m_OwnedUnits: []
+  m_PhotonView: {fileID: 114867845896233312}
+  m_UnitDetailsHUD: {fileID: 0}
+  map: {fileID: 0}
+  m_DefaultController: {fileID: 114274756095023488}
+  m_DirectionTargetController: {fileID: 114644287762346158}
+  m_PointTargetController: {fileID: 114582920080217326}
+  m_CastController: {fileID: 114494469600736026}
+  m_AbilityEventBus: {fileID: 0}
+--- !u!114 &114494469600736026
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1171307634982906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b9507d6b6efde547ab4961794a2e562, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ParentPlayerController: {fileID: 114399145871187928}
+--- !u!114 &114582920080217326
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1171307634982906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55a3e8415ba32a6459d78f20a5ade0c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SelectedUnit: {fileID: 0}
+  map: {fileID: 0}
+  m_AbilityEventBus: {fileID: 0}
+--- !u!114 &114644287762346158
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1171307634982906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc246a065411b124e9b92c62283c2486, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SelectedUnit: {fileID: 0}
+  map: {fileID: 0}
+  m_AbilityEventBus: {fileID: 0}
+--- !u!114 &114666574275599560
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1171307634982906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60e9fb00f065c4464bb3bcf830317ec7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PhotonView: {fileID: 114867845896233312}
+  m_RoundInstance: {fileID: 0}
+  PlayerName: Snake-Eyes
+  m_Color: {r: 0, g: 0.15221739, b: 1, a: 1}
+--- !u!114 &114867845896233312
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1171307634982906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 0
+  OwnershipTransfer: 0
+  ObservedComponents:
+  - {fileID: 0}
+  viewIdField: 0
+  InstantiationId: 6
+  isRuntimeInstantiated: 0
