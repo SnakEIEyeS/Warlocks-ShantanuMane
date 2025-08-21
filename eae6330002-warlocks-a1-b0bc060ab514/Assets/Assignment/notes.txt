@@ -1,0 +1,27 @@
+Assignment Notes
+
+Assignment: [7 - Multiplayer]
+Student: [Shantanu Mane]
+
+What are the controls for the locally controlled unit?
+[Right-click to move. Left-click to select a unit.
+Q to cast Push, W to cast Teleport, E to cast Fireball, D to cast Blast, 
+F for Gravity Well, B for Meteor, T for Stealth, V for Spell Shield.
+S to stop any action.]
+
+What workflow enhancement did you implement in the editor?
+[]
+
+Any other comments?
+[I have done spawning, movement, ability casting, health, damage, status effects over the network.
+I have also done the game loop, but due to some incorrect reference handling that I could not figure out,
+there is a bug where only the Master's UI is properly handled. A weird bug with spawning happening too many times
+might also occur.
+I have updated all the abilities to work over the network, except Gravity Well which I couldn't properly do. It works in a crazy way on the Master at least.
+Teleport works fine for the Master, but for Clients it teleports them to the edges of the map. 
+They can walk back across the map, so it shouldn't affect testing.
+I've setup most of the game to work on the Master - 
+Abilities do their actual processing on the Master, but listen to events on the Client.
+Client Units are handled on the Client itself. 
+All Damage and Status Effects are handled primarily on the Master and then relayed to the Client.
+I have disabled Camera Controls because it is very inconvenient to test multiple game windows with them On.]
